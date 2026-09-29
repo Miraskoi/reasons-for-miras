@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10 причин дать денег Мирасу</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            900: '#881337',
+                        },
+                        gold: '#f59e0b',
+                    },
+                    fontFamily: {
+                        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .slide-enter {
+            animation: fadeInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(244, 63, 94, 0.5);
+        }
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col justify-between overflow-hidden font-sans select-none">
+
+    <!-- Фоновые визуальные элементы -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-600/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-900/10 rounded-full blur-[120px]"></div>
+    </div>
+
+    <!-- Шапка -->
+    <header class="relative z-10 w-full max-w-5xl mx-auto px-6 pt-6 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center font-black text-xl shadow-lg shadow-brand-500/20">
+                💰
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight leading-none">Фонд Поддержки Мираса</h1>
+                <p class="text-xs text-zinc-400 mt-0.5">Сверхсерьёзная презентация</p>
+            </div>
+        </div>
+
+        <div class="hidden sm:flex items-center gap-2 bg-zinc-900/80 border border-zinc-800 px-3 py-1.5 rounded-full text-xs text-zinc-400">
+            <kbd class="bg-zinc-800 text-zinc-200 px-2 py-0.5 rounded border border-zinc-700 font-mono font-bold">Space</kbd>
+            <span>для следующего слайда</span>
+        </div>
+    </header>
+
+    <!-- Основной контент (Слайды) -->
+    <main class="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-6 my-auto">
+        <div class="w-full max-w-3xl">
+            <div id="slide-container" class="glass-panel rounded-3xl p-8 sm:p-12 shadow-2xl transition-all duration-300">
+                <!-- Слайды генерируются динамически через JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Подвал и элементы управления -->
+    <footer class="relative z-10 w-full max-w-3xl mx-auto px-6 pb-6">
+        <!-- Индикатор прогресса -->
+        <div class="w-full bg-zinc-900 h-2 rounded-full mb-6 overflow-hidden border border-zinc-800/80">
+            <div id="progress-bar" class="bg-gradient-to-r from-brand-600 to-amber-500 h-full w-0 transition-all duration-300"></div>
+        </div>
+
+        <div class="flex items-center justify-between gap-4">
+            <button id="btn-prev" onclick="prevSlide()" class="px-5 py-3 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-semibold text-sm transition flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span class="hidden sm:inline">Назад</span>
+            </button>
+
+            <div id="slide-counter" class="text-xs font-semibold tracking-wider uppercase text-zinc-400 bg-zinc-900/80 border border-zinc-800 px-4 py-2 rounded-full">
+                Загрузка...
+            </div>
+
+            <button id="btn-next" onclick="nextSlide()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white font-bold text-sm shadow-lg shadow-brand-600/30 transition flex items-center gap-2">
+                <span id="btn-next-text">Далее</span>
+                <i id="btn-next-icon" class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Логика скрипта -->
+    <script>
+        const slides = [
+            {
+                type: 'intro',
+                badge: 'Официальный документ',
+                title: '10 Причин, почему ты ДОЛЖЕН дать мне денег',
+                subtitle: 'Интерактивное исследование с максимальной степенью аргументации. Нажимай «Пробел» или кнопку ниже.',
+                icon: '🚀'
+            },
+            {
+                number: '01',
+                title: 'Я их просто люблю',
+                desc: 'Он смотрит на деньги с искренней нежностью и теплотой. Зачем лишать человека такой чистой и бескорыстной любви?',
+                note: 'у него еврейские корни',
+                icon: '❤️'
+            },
+            {
+                number: '02',
+                title: 'Деньги очень сильно любят Меня',
+                desc: 'Это взаимный космос. Когда банкноты оказываются у него, они чувствуют себя в безопасности и отказываются уходить.',
+                note: 'еврейские корни берут своё',
+                icon: '🧲'
+            },
+            {
+                number: '03',
+                title: 'я их коллекционирую',
+                desc: 'Кто-то собирает марки, кто-то фантики, а Мирас — тенге и доллары. Помоги человеку пополнить коллекцию уникальным экспонатом.',
+                note: 'генетическая тяга к накоплению',
+                icon: '📚'
+            },
+            {
+                number: '04',
+                title: 'Твои деньги пойдут на благотворительность',
+                desc: 'Благотворительный фонд имени Мираса занимается важным делом: покупкой мозгов сестре.',
+                note: 'фонд основан на еврейской мудрости',
+                icon: '🕊️'
+            },
+            {
+                number: '05',
+                title: 'Восстановление мировой гармонии',
+                desc: 'У тебя деньги есть, а у Мираса их мало. В Вселенной дисбаланс. Перевод средств моментально выравнивает чакры и карму.',
+                note: 'древние корни не обманешь',
+                icon: '☯️'
+            },
+            {
+                number: '06',
+                title: 'Спонсорство великого будущего',
+                desc: 'Представь: Мирас станет миллиардером и на интервью скажет: «Всё началось с той сотни, которую мне перевели просто так».',
+                note: 'инвестиция в еврея — лучшая инвестиция',
+                icon: '📈'
+            },
+            {
+                number: '07',
+                title: 'Защита от спонтанной инфляции',
+                desc: 'Зачем хранить деньги у себя, если они обесцениваются? Отдай их Мирасу — у него они потратятся быстрее, чем успеет вырасти инфляция!',
+                note: 'финансовый гений в крови',
+                icon: '🛡️'
+            },
+            {
+                number: '08',
+                title: 'Тебе всё равно нужнее душевная чистка',
+                desc: 'Отдав деньги, ты ощутишь небывалую лёгкость в кошельке и на душе. Мирас берет всю тяжесть финансов на себя.',
+                note: 'жертвенность с еврейским подтекстом',
+                icon: '✨'
+            },
+            {
+                number: '09',
+                title: 'Он обещает подумать о спасибо',
+                desc: 'За каждый перевод Мирас гарантирует отправку ментального «респекта» прямо в твою биополевую ауру.',
+                note: 'бартер высшего уровня',
+                icon: '🤝'
+            },
+            {
+                number: '10',
+                title: 'Потому что так надо',
+                desc: 'Ты дошёл до десятого слайда. Назад дороги нет. Звёзды сошлись, логика исчерпана, аргументы железные.',
+                note: 'генетический код сработал, переводи',
+                icon: '👑'
+            },
+            {
+                type: 'outro',
+                title: 'Перевод одобрен!',
+                subtitle: 'Вселенная и Мирас ждут твоей транзакции. Выбирай удобный способ!',
+                icon: '🎉'
+            }
+        ];
+
+        let currentSlide = 0;
+
+        function renderSlide() {
+            const container = document.getElementById('slide-container');
+            const data = slides[currentSlide];
+            
+            // Сброс класса анимации
+            container.classList.remove('slide-enter');
+            void container.offsetWidth; // Триггер reflow
+            container.classList.add('slide-enter');
+
+            if (data.type === 'intro') {
+                container.innerHTML = `
+                    <div class="text-center py-6">
+                        <div class="text-6xl mb-6 transform hover:scale-110 transition duration-300 inline-block">${data.icon}</div>
+                        <span class="bg-brand-500/10 border border-brand-500/30 text-brand-500 font-bold text-xs uppercase tracking-widest px-4 py-1.5 rounded-full inline-block mb-4">
+                            ${data.badge}
+                        </span>
+                        <h2 class="text-3xl sm:text-5xl font-black mb-4 leading-tight glow-text">
+                            ${data.title}
+                        </h2>
+                        <p class="text-zinc-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+                            ${data.subtitle}
+                        </p>
+                        <div class="mt-8 flex justify-center items-center gap-2 text-xs text-zinc-400 bg-zinc-900/50 w-max mx-auto px-4 py-2 rounded-xl border border-zinc-800">
+                            <span>Нажми</span>
+                            <kbd class="bg-zinc-800 text-zinc-200 px-2 py-0.5 rounded border border-zinc-700 font-mono">Пробел</kbd>
+                            <span>или кнопки снизу</span>
+                        </div>
+                    </div>
+                `;
+            } else if (data.type === 'outro') {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="text-6xl mb-4 inline-block animate-bounce">${data.icon}</div>
+                        <h2 class="text-3xl sm:text-4xl font-black mb-2 text-amber-400">
+                            ${data.title}
+                        </h2>
+                        <p class="text-zinc-400 text-sm sm:text-base mb-6">
+                            ${data.subtitle}
+                        </p>
+                        
+                        <div class="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 mb-6 max-w-md mx-auto text-left shadow-inner">
+                            <div class="flex justify-between items-center mb-4 pb-3 border-b border-zinc-800">
+                                <span class="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Реквизиты Мираса</span>
+                                <span class="text-xs bg-amber-500/20 text-amber-400 font-mono px-2 py-0.5 rounded">Kaspi / Любой Банк</span>
+                            </div>
+                            <div class="font-mono text-xl sm:text-2xl font-bold text-zinc-100 tracking-wider text-center py-2 bg-zinc-950 rounded-xl border border-zinc-800/80 mb-3 select-all">
+                                +7 (7xx) xxx-xx-xx
+                            </div>
+                            <button onclick="copyToClipboard('+77756448918')" id="copy-btn" class="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 border border-zinc-700">
+                                <i class="fa-regular fa-copy"></i> Скопировать номер
+                            </button>
+                        </div>
+
+                        <button onclick="triggerConfetti()" class="px-8 py-4 bg-gradient-to-r from-amber-500 to-brand-500 hover:from-amber-400 hover:to-brand-400 text-zinc-950 font-black text-lg rounded-2xl shadow-xl shadow-amber-500/20 transform hover:-translate-y-0.5 active:translate-y-0 transition">
+                            💸 ОТПРАВИТЬ МИЛЛИОН (КОПИРОВАТЬ ЕТ)
+                        </button>
+                    </div>
+                `;
+                triggerConfetti();
+            } else {
+                container.innerHTML = `
+                    <div class="flex flex-col h-full justify-between">
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-5xl font-black text-brand-500/40 font-mono">${data.number}</span>
+                            <span class="text-4xl p-3 bg-zinc-900 rounded-2xl border border-zinc-800 shadow-inner">${data.icon}</span>
+                        </div>
+                        <div class="my-auto">
+                            <h3 class="text-2xl sm:text-4xl font-extrabold mb-4 leading-tight text-zinc-100">
+                                ${data.title}
+                            </h3>
+                            <p class="text-zinc-300 text-base sm:text-xl leading-relaxed font-normal mb-6">
+                                ${data.desc}
+                            </p>
+                        </div>
+                        <div class="pt-4 border-t border-zinc-800/80 flex items-center gap-2 text-xs sm:text-sm text-amber-400/90 font-mono italic">
+                            <i class="fa-solid fa-circle-info text-amber-500"></i>
+                            <span>(${data.note})</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            updateControls();
+        }
+
+        function updateControls() {
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNextText = document.getElementById('btn-next-text');
+            const btnNextIcon = document.getElementById('btn-next-icon');
+            const counter = document.getElementById('slide-counter');
+            const progressBar = document.getElementById('progress-bar');
+
+            // Кнопка назад
+            btnPrev.disabled = currentSlide === 0;
+
+            // Текст следующей кнопки
+            if (currentSlide === 0) {
+                btnNextText.textContent = 'Поехали';
+                btnNextIcon.className = 'fa-solid fa-play';
+            } else if (currentSlide === slides.length - 1) {
+                btnNextText.textContent = 'В начало';
+                btnNextIcon.className = 'fa-solid fa-rotate-left';
+            } else {
+                btnNextText.textContent = 'Далее';
+                btnNextIcon.className = 'fa-solid fa-arrow-right';
+            }
+
+            // Счетчик
+            if (currentSlide === 0) {
+                counter.textContent = 'Вступление';
+            } else if (currentSlide === slides.length - 1) {
+                counter.textContent = 'Финал';
+            } else {
+                counter.textContent = `Причина ${currentSlide} из ${slides.length - 2}`;
+            }
+
+            // Прогресс бар
+            const progress = (currentSlide / (slides.length - 1)) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+            } else {
+                currentSlide = 0;
+            }
+            renderSlide();
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                renderSlide();
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            const btn = document.getElementById('copy-btn');
+            btn.innerHTML = '<i class="fa-solid fa-check text-green-400"></i> Скопировано!';
+            btn.classList.add('border-green-500/50', 'bg-green-500/10');
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-regular fa-copy"></i> Скопировать номер';
+                btn.classList.remove('border-green-500/50', 'bg-green-500/10');
+            }, 2000);
+        }
+
+        function triggerConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#f43f5e', '#f59e0b', '#10b981', '#3b82f6']
+            });
+        }
+
+        // Клавиатурная навигация
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowRight') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+
+        // Инициализация
+        renderSlide();
+    </script>
+</body>
+</html>
